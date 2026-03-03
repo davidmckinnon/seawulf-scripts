@@ -17,6 +17,13 @@ for OUTDIR in *_count/outs; do
     EXPERIMENT=$(basename "$(dirname "${OUTDIR}")" | sed 's/_count$//')
     DEST="gbackup:${EXPERIMENT}_count"
 
+    # --- Job/config files (sit alongside the *_count folder) ---
+    echo "Uploading ${EXPERIMENT} config files ..."
+    for EXT in csv slurm txt; do
+        [ -f "${EXPERIMENT}.${EXT}" ] && rclone copy -P "${EXPERIMENT}.${EXT}" "${DEST}/"
+    done
+
+    # --- Per-sample outputs ---
     for SAMPLE_DIR in "${OUTDIR}"/per_sample_outs/*/; do
         [ -d "${SAMPLE_DIR}" ] || continue
         sample=$(basename "${SAMPLE_DIR}")
