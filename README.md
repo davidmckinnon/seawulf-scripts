@@ -24,6 +24,15 @@ sc145/                          ← run script from here
 │       └── outs/
 │           └── per_sample_outs/
 │               ├── control_1/
+│               │   ├── web_summary.html
+│               │   ├── metrics_summary.csv
+│               │   └── count/
+│               │       ├── sample_filtered_feature_bc_matrix.h5
+│               │       ├── sample_cloupe.cloupe
+│               │       └── cell_types/           (if annotation model was used)
+│               │           ├── cell_types.csv
+│               │           ├── cell_annotation_differential_expression.csv
+│               │           └── cell_annotation_results.json.gz
 │               ├── control_2/
 │               ├── PTX_1/
 │               └── PTX_2/
