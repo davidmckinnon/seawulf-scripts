@@ -1,6 +1,6 @@
-# bioinformatics-scripts
+# seawulf-scripts
 
-Utility scripts for single-cell RNA-seq analysis workflows.
+Utility scripts for single-cell RNA-seq analysis workflows on the Seawulf HPC cluster.
 
 ## Contents
 
