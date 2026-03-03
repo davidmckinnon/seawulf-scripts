@@ -54,7 +54,8 @@ bash /path/to/seawulf-scripts/cellranger/upload_cellranger_multi.sh
 | `web_summary.html` | `per_sample_outs/{sample}/` | Interactive QC report |
 | `metrics_summary.csv` | `per_sample_outs/{sample}/` | Machine-readable QC metrics |
 | `sample_filtered_feature_bc_matrix.h5` | `per_sample_outs/{sample}/count/` | Filtered count matrix (Seurat/Scanpy) |
-| `cell_types.csv` | `per_sample_outs/{sample}/count/` | Automated cell type annotations (optional) |
+| `cell_types/cell_types.csv` | `per_sample_outs/{sample}/count/cell_types/` | Per-barcode cell type annotations (optional) |
+| `cell_types/cell_annotation_differential_expression.csv` | `per_sample_outs/{sample}/count/cell_types/` | Marker genes per cell type (optional) |
 | `sample_cloupe.cloupe` | `per_sample_outs/{sample}/count/` | Loupe Browser file |
 
 **Google Drive destination structure**
@@ -69,6 +70,8 @@ gbackup:
         ├── web_summary.html
         ├── metrics_summary.csv
         ├── sample_filtered_feature_bc_matrix.h5
-        ├── cell_types.csv          (if present)
+        ├── cell_types/                      (if annotation model was used)
+        │   ├── cell_types.csv
+        │   └── cell_annotation_differential_expression.csv
         └── sample_cloupe.cloupe
 ```

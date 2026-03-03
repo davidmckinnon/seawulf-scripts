@@ -53,13 +53,13 @@ for OUTDIR in */*_count/outs; do
         echo "  -> sample_filtered_feature_bc_matrix.h5"
         rclone copy -P "${SAMPLE_DIR}/count/sample_filtered_feature_bc_matrix.h5" "${DEST}/${sample}/"
 
-        # Cell type annotations CSV (optional: only present if Cell Ranger annotation model was used)
-        if [ -f "${SAMPLE_DIR}/count/cell_types.csv" ]; then
-            echo "  -> cell_types.csv"
-            rclone copy "${SAMPLE_DIR}/count/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
-        elif [ -f "${SAMPLE_DIR}/cell_types.csv" ]; then
-            echo "  -> cell_types.csv"
-            rclone copy "${SAMPLE_DIR}/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
+        # Cell type annotation folder (optional: only present if Cell Ranger annotation model was used)
+        # Contains: cell_types.csv, cell_annotation_differential_expression.csv, cell_annotation_results.json.gz
+        if [ -d "${SAMPLE_DIR}/count/cell_types" ]; then
+            echo "  -> cell_types/cell_types.csv"
+            rclone copy -P "${SAMPLE_DIR}/count/cell_types/cell_types.csv" "${DEST}/${sample}/cell_types/"
+            echo "  -> cell_types/cell_annotation_differential_expression.csv"
+            rclone copy -P "${SAMPLE_DIR}/count/cell_types/cell_annotation_differential_expression.csv" "${DEST}/${sample}/cell_types/"
         fi
 
         echo "  -> sample_cloupe.cloupe"
