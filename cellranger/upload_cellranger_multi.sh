@@ -2,25 +2,37 @@
 #
 # Upload key Cell Ranger multi outputs to Google Drive via rclone
 #
-# Usage: Run from the directory containing *_count folders
+# Usage: Run from the top-level experiment directory (e.g. sc145/)
 #   e.g., cd /path/to/sc145 && bash upload_cellranger_multi.sh
+#
+# Expected structure:
+#   sc145/
+#   ├── sc145_A/
+#   │   ├── sc145_A.csv / .slurm / .txt   (config files)
+#   │   └── sc145_A_count/outs/per_sample_outs/{sample}/
+#   ├── sc145_B/
+#   └── ...
 #
 # Prerequisites:
 #   - rclone configured with a remote named "gbackup"
-#   - Cell Ranger multi output structure:
-#       *_count/outs/per_sample_outs/{sample}/
 #
 
 found=0
 
-for OUTDIR in *_count/outs; do
+for OUTDIR in */*_count/outs; do
     EXPERIMENT=$(basename "$(dirname "${OUTDIR}")" | sed 's/_count$//')
+    EXPERIMENT_DIR=$(dirname "$(dirname "${OUTDIR}")")
     DEST="gbackup:${EXPERIMENT}_count"
 
-    # --- Job/config files (sit alongside the *_count folder) ---
-    echo "Uploading ${EXPERIMENT} config files ..."
+    # --- Job/config files (sit inside the sc145_A/ folder) ---
+    echo ""
+    echo "=== ${EXPERIMENT}: uploading config files ==="
     for EXT in csv slurm txt; do
-        [ -f "${EXPERIMENT}.${EXT}" ] && rclone copy -P "${EXPERIMENT}.${EXT}" "${DEST}/"
+        FILE="${EXPERIMENT_DIR}/${EXPERIMENT}.${EXT}"
+        if [ -f "${FILE}" ]; then
+            echo "  -> ${EXPERIMENT}.${EXT}"
+            rclone copy -P "${FILE}" "${DEST}/"
+        fi
     done
 
     # --- Per-sample outputs ---
@@ -29,27 +41,33 @@ for OUTDIR in *_count/outs; do
         sample=$(basename "${SAMPLE_DIR}")
         found=1
 
-        echo "Uploading ${EXPERIMENT} / ${sample} ..."
+        echo ""
+        echo "=== ${EXPERIMENT} / ${sample} ==="
 
-        # Web summary (QC, interactive HTML)
+        echo "  -> web_summary.html"
         rclone copy -P "${SAMPLE_DIR}/web_summary.html" "${DEST}/${sample}/"
 
-        # Per-sample metrics CSV (machine-readable QC: cells, genes, UMIs)
+        echo "  -> metrics_summary.csv"
         rclone copy -P "${SAMPLE_DIR}/metrics_summary.csv" "${DEST}/${sample}/"
 
-        # Filtered count matrix (for Seurat/Scanpy)
+        echo "  -> sample_filtered_feature_bc_matrix.h5"
         rclone copy -P "${SAMPLE_DIR}/count/sample_filtered_feature_bc_matrix.h5" "${DEST}/${sample}/"
 
         # Cell type annotations CSV (optional: only present if Cell Ranger annotation model was used)
-        # Try both possible locations; suppress all output since file may not exist
-        rclone copy "${SAMPLE_DIR}/count/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
-        rclone copy "${SAMPLE_DIR}/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
+        if [ -f "${SAMPLE_DIR}/count/cell_types.csv" ]; then
+            echo "  -> cell_types.csv"
+            rclone copy "${SAMPLE_DIR}/count/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
+        elif [ -f "${SAMPLE_DIR}/cell_types.csv" ]; then
+            echo "  -> cell_types.csv"
+            rclone copy "${SAMPLE_DIR}/cell_types.csv" "${DEST}/${sample}/" > /dev/null 2>&1 || true
+        fi
 
-        # Cloupe file (for Loupe Browser visualisation)
+        echo "  -> sample_cloupe.cloupe"
         rclone copy -P "${SAMPLE_DIR}/count/sample_cloupe.cloupe" "${DEST}/${sample}/"
 
     done
 
+    echo ""
     echo "Upload complete for ${EXPERIMENT}."
 done
 
